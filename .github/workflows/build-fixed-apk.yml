@@ -1,0 +1,42 @@
+name: Build Limon Refrigerator Fixed APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract project
+        run: |
+          unzip -q limon_refrigerator_v4_fixed_no_pin.zip -d extracted
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Find Android project
+        run: |
+          find extracted -name settings.gradle -o -name settings.gradle.kts
+
+      - name: Build APK
+        working-directory: extracted/lr_updated_project
+        run: gradle assembleDebug --no-daemon
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: limon-refrigerator-fixed-no-pin
+          path: extracted/lr_updated_project/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
